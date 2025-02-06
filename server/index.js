@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const db = require('./database');
 require('dotenv').config();
 
 const app = express();
@@ -14,24 +15,42 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/wallets', (req, res) => {
-  res.json({ wallets: [] });
+  db.all('SELECT * FROM wallets ORDER BY created_at DESC', (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json({ wallets: rows });
+  });
 });
 
 app.post('/api/wallets', (req, res) => {
-  const { address } = req.body;
+  const { address, network = 'ethereum' } = req.body;
 
   if (!address) {
     return res.status(400).json({ error: 'Address is required' });
   }
 
-  // TODO: Validate wallet address format
-  // TODO: Add to database
+  if (!address.startsWith('0x') || address.length !== 42) {
+    return res.status(400).json({ error: 'Invalid Ethereum address format' });
+  }
 
-  res.json({
-    success: true,
-    message: 'Wallet added successfully',
-    address: address
+  const stmt = db.prepare('INSERT INTO wallets (address, network) VALUES (?, ?)');
+  stmt.run([address.toLowerCase(), network], function(err) {
+    if (err) {
+      if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        return res.status(409).json({ error: 'Wallet already exists' });
+      }
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Wallet added successfully',
+      address: address,
+      id: this.lastID
+    });
   });
+  stmt.finalize();
 });
 
 if (process.env.NODE_ENV === 'production') {
