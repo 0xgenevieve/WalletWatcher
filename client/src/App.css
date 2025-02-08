@@ -82,6 +82,9 @@
   border-radius: 8px;
   border: 1px solid #e9ecef;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .wallet-address {
@@ -108,4 +111,35 @@
 .add-btn:disabled {
   background: #6c757d;
   cursor: not-allowed;
+}
+
+.wallet-info {
+  flex: 1;
+}
+
+.wallet-balance {
+  color: #28a745;
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.wallet-checked {
+  color: #6c757d;
+  font-size: 12px;
+}
+
+.check-balance-btn {
+  padding: 8px 16px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 15px;
+}
+
+.check-balance-btn:hover {
+  background: #138496;
 }

@@ -8,6 +8,7 @@ interface Wallet {
   network: string;
   created_at: string;
   balance?: string;
+  last_checked?: string;
 }
 
 function App() {
@@ -49,6 +50,15 @@ function App() {
     }
   };
 
+  const checkBalance = async (walletId: number) => {
+    try {
+      await axios.get(`/api/wallets/${walletId}/balance`);
+      fetchWallets();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to check balance');
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -84,7 +94,23 @@ function App() {
                 <div key={wallet.id} className="wallet-item">
                   <div className="wallet-address">{wallet.address}</div>
                   <div className="wallet-network">{wallet.network}</div>
-                  <div className="wallet-added">Added: {new Date(wallet.created_at).toLocaleDateString()}</div>
+                  <div className="wallet-info">
+                    {wallet.balance && (
+                      <div className="wallet-balance">
+                        Balance: {wallet.balance} {wallet.network === 'ethereum' ? 'ETH' : 'BNB'}
+                      </div>
+                    )}
+                    <div className="wallet-added">Added: {new Date(wallet.created_at).toLocaleDateString()}</div>
+                    {wallet.last_checked && (
+                      <div className="wallet-checked">Last checked: {new Date(wallet.last_checked).toLocaleString()}</div>
+                    )}
+                  </div>
+                  <button
+                    className="check-balance-btn"
+                    onClick={() => checkBalance(wallet.id)}
+                  >
+                    Check Balance
+                  </button>
                 </div>
               ))}
             </div>

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const db = require('./database');
+const blockchainService = require('./blockchain');
 require('dotenv').config();
 
 const app = express();
@@ -51,6 +52,37 @@ app.post('/api/wallets', (req, res) => {
     });
   });
   stmt.finalize();
+});
+
+app.get('/api/wallets/:id/balance', async (req, res) => {
+  const walletId = req.params.id;
+
+  db.get('SELECT * FROM wallets WHERE id = ?', [walletId], async (err, wallet) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+
+    try {
+      const balanceData = await blockchainService.getBalance(wallet.address, wallet.network);
+
+      const stmt = db.prepare('UPDATE wallets SET balance = ?, last_checked = CURRENT_TIMESTAMP WHERE id = ?');
+      stmt.run([balanceData.balance, walletId]);
+      stmt.finalize();
+
+      res.json({
+        wallet_id: walletId,
+        address: wallet.address,
+        network: wallet.network,
+        ...balanceData
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
 });
 
 if (process.env.NODE_ENV === 'production') {
