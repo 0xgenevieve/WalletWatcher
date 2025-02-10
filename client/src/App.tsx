@@ -59,6 +59,19 @@ function App() {
     }
   };
 
+  const deleteWallet = async (walletId: number) => {
+    if (!window.confirm('Are you sure you want to delete this wallet?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/wallets/${walletId}`);
+      fetchWallets();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Failed to delete wallet');
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -105,12 +118,20 @@ function App() {
                       <div className="wallet-checked">Last checked: {new Date(wallet.last_checked).toLocaleString()}</div>
                     )}
                   </div>
-                  <button
-                    className="check-balance-btn"
-                    onClick={() => checkBalance(wallet.id)}
-                  >
-                    Check Balance
-                  </button>
+                  <div className="wallet-actions">
+                    <button
+                      className="check-balance-btn"
+                      onClick={() => checkBalance(wallet.id)}
+                    >
+                      Check Balance
+                    </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteWallet(wallet.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -85,6 +85,22 @@ app.get('/api/wallets/:id/balance', async (req, res) => {
   });
 });
 
+app.delete('/api/wallets/:id', (req, res) => {
+  const walletId = req.params.id;
+
+  db.run('DELETE FROM wallets WHERE id = ?', [walletId], function(err) {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (this.changes === 0) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+
+    res.json({ success: true, message: 'Wallet deleted successfully' });
+  });
+});
+
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));
 
