@@ -14,6 +14,7 @@ interface Wallet {
 function App() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [newAddress, setNewAddress] = useState('');
+  const [selectedNetwork, setSelectedNetwork] = useState('ethereum');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -40,7 +41,7 @@ function App() {
     setError('');
 
     try {
-      await axios.post('/api/wallets', { address: newAddress });
+      await axios.post('/api/wallets', { address: newAddress, network: selectedNetwork });
       setNewAddress('');
       fetchWallets();
     } catch (err: any) {
@@ -81,20 +82,30 @@ function App() {
       <main>
         <div className="wallet-form">
           <h2>Add Wallet Address</h2>
-          <input
-            type="text"
-            value={newAddress}
-            onChange={(e) => setNewAddress(e.target.value)}
-            placeholder="Enter wallet address (0x...)"
-            className="wallet-input"
-          />
-          <button
-            className="add-btn"
-            onClick={addWallet}
-            disabled={loading}
-          >
-            {loading ? 'Adding...' : 'Add Wallet'}
-          </button>
+          <div className="form-row">
+            <input
+              type="text"
+              value={newAddress}
+              onChange={(e) => setNewAddress(e.target.value)}
+              placeholder="Enter wallet address (0x...)"
+              className="wallet-input"
+            />
+            <select
+              value={selectedNetwork}
+              onChange={(e) => setSelectedNetwork(e.target.value)}
+              className="network-select"
+            >
+              <option value="ethereum">Ethereum</option>
+              <option value="bsc">BSC</option>
+            </select>
+            <button
+              className="add-btn"
+              onClick={addWallet}
+              disabled={loading}
+            >
+              {loading ? 'Adding...' : 'Add Wallet'}
+            </button>
+          </div>
           {error && <p className="error">{error}</p>}
         </div>
         <div className="wallet-list">
